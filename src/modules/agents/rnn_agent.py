@@ -20,8 +20,9 @@ class RNNAgent(nn.Module):
 
     def forward(self, inputs, hidden_state):
         x = F.relu(self.fc1(inputs))
-        h_in = hidden_state.reshape(-1, self.args.hidden_dim)
+        
         if self.args.use_rnn:
+            h_in = hidden_state.reshape(-1, self.args.hidden_dim)
             h = self.rnn(x, h_in)
         else:
             h = F.relu(self.rnn(x))

@@ -6,6 +6,9 @@ from utilities import get_obs_sizes, _get_input_shape, _get_config, recursive_di
 
 from modules.agents import REGISTRY as agent_REGISTRY
 from types import SimpleNamespace as SN
+from torch.autograd import Variable
+import torch.nn.functional as F
+
 
 
 class GeneralController:
@@ -64,8 +67,24 @@ class GeneralController:
         inputs = self.get_inputs(obs)
         # forward pass of the agent
         vals, _ = self.agent(th.tensor(inputs).float(), None)
+        
+        if self.agent_type=="maddpg":
+            actions = self.maddpg_action_selection(vals.detach(), verbose)
+        else: 
+            actions = self.action_selection(vals.detach(), verbose)
+        
+        
+        return actions
+
+
+    def action_selection(self, vals, verbose):
+        """
+        Normal action selection method
+        """
+
         if verbose:
             print("vals", vals)
+
         # some methods have logits as outputs
         if self.config_dict["agent_output_type"] == "pi_logits":
             # if self.config_dict["mask_before_softmax"]:
@@ -80,9 +99,20 @@ class GeneralController:
             pass
         # choose best action 
         actions = th.argmax(vals,axis=-1).numpy()
-
         if verbose:
             print("actions", actions)
+
+        return actions
+
+    def maddpg_action_selection(self, vals, verbose):
+        if verbose:
+            print("vals", vals)
+
+        chosen_actions = self.gumbel_softmax(vals, hard=True).argmax(dim=-1)
+        actions = chosen_actions.detach().numpy()
+        if verbose:
+            print("actions", actions)
+        
         return actions
 
     def get_inputs(self, obs):
@@ -102,3 +132,46 @@ class GeneralController:
             # or if ids are necessary (n_agents,obs+one_hot_id)
             inputs = np.vstack((np.concatenate([obs[0],np.eye(2)[0]],axis=-1), np.concatenate([obs[1],np.eye(2)[1]],axis=-1)))
         return inputs 
+
+    
+    def onehot_from_logits(self, logits, eps=0.0):
+        """
+        Given batch of logits, return one-hot sample using epsilon greedy strategy
+        (based on given epsilon)
+        """
+        # get best (according to current policy) actions in one-hot form
+        # print(logits.size(), logits.max(-1, keepdim=True)[0].size())
+        
+        argmax_acs = (logits == logits.max(-1, keepdim=True)[0]).float()
+        return argmax_acs
+
+    def sample_gumbel(self, shape, eps=1e-20, tens_type=th.FloatTensor):
+        """Sample from Gumbel(0, 1)"""
+        U = Variable(tens_type(*shape).uniform_(), requires_grad=False)
+        return -th.log(-th.log(U + eps) + eps)
+
+    # modified for PyTorch from https://github.com/ericjang/gumbel-softmax/blob/master/Categorical%20VAE.ipynb
+    
+    def gumbel_softmax_sample(self,logits, temperature):
+        """ Draw a sample from the Gumbel-Softmax distribution"""
+        y = logits + self.sample_gumbel(logits.shape, tens_type=type(logits.data)).to(logits.device)
+        return F.softmax(y / temperature, dim=-1)
+
+    # modified for PyTorch from https://github.com/ericjang/gumbel-softmax/blob/master/Categorical%20VAE.ipynb
+    def gumbel_softmax(self, logits, temperature=1.0, hard=False):
+        """Sample from the Gumbel-Softmax distribution and optionally discretize.
+        Args:
+          logits: [batch_size, n_class] unnormalized log-probs
+          temperature: non-negative scalar
+          hard: if True, take argmax, but differentiate w.r.t. soft sample y
+        Returns:
+          [batch_size, n_class] sample from the Gumbel-Softmax distribution.
+          If hard=True, then the returned sample will be one-hot, otherwise it will
+          be a probabilitiy distribution that sums to 1 across classes
+        """
+
+        y = self.gumbel_softmax_sample(logits, temperature)
+        if hard:
+            y_hard = self.onehot_from_logits(y)
+            y = (y_hard - y).detach() + y
+        return y

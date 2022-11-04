@@ -11,6 +11,11 @@ def get_obs_sizes(obs_space, n_agents, env_name):
         out_shape[-1] += n_agents
         if "Foraging" in env_name:
             return 2*obs_space.shape[-1] , obs_space.shape[-1] 
+        if "Cooperative" in env_name:
+            return 2*obs_space.shape[-1] , obs_space.shape[-1] 
+        if "cooking" in env_name:
+            return 2*obs_space.shape[-1] , obs_space.shape[-1] 
+            
         return None
 
 def _get_input_shape(agent_o_size, n_agents, args):

@@ -47,6 +47,7 @@ class GeneralController:
         self.agent_o_size = agent_o_size
         self.n_agents = n_agents
         self.env_name = env_name
+        self.flag_4f_3f = False
         # All gets saved in the environment configuration 
         self.config_dict = recursive_dict_update(self.config_dict, self.alg_config)
         self.config_dict = recursive_dict_update(self.config_dict, self.scheme)
@@ -56,11 +57,25 @@ class GeneralController:
         self.input_shape = _get_input_shape(self.agent_o_size, self.n_agents, self.config_dict)
 
         self.simple_config = SN(**self.config_dict)
-        self.agent = agent_REGISTRY["rnn"](self.input_shape, self.simple_config)
+        
         if "Foraging" in self.env_name:
             env_folder = "foraging" 
+            if self.env_name=="Foraging-6x6-2p-3f-v2":
+                print("**************")
+                print("**************")
+                print("env was trained with 4 fruits, but running with 3 fruits")
+                print("should add [-1 -1 0] to obs so that net can run")
+                self.flag_4f_3f = True
+                # self.input_shape += 3
+                exit()
+                print("**************")
+                print("**************")
         if "Cooperative" in self.env_name:
             env_folder = "cooperative" 
+        if "cooking" in self.env_name:
+            env_folder = "cooking" 
+
+        self.agent = agent_REGISTRY["rnn"](self.input_shape, self.simple_config)
 
         path = os.path.join("results", "models", env_folder, agent_type, seed)
         self.agent.load_state_dict(th.load("{}/agent.th".format(path), map_location=lambda storage, loc: storage))
@@ -125,7 +140,7 @@ class GeneralController:
             Method to process observation to send to the network  
         """
         # Given the observation, we basically just make it (n_agents,obs)
-
+  
         inputs = np.vstack((obs[0],obs[1]))
         
         if self.config_dict["obs_last_action"]:

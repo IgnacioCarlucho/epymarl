@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 
 class GeneralController:
-    def __init__(self, agent_type, seed, act_sizes, state_sizes, agent_o_size, n_agents):
+    def __init__(self, agent_type, seed, act_sizes, state_sizes, agent_o_size, n_agents, env_name):
 
         # Get the default config from default.yaml
         with open(os.path.join(os.path.dirname(__file__), "config", "default.yaml"), "r") as f:
@@ -46,7 +46,7 @@ class GeneralController:
         self.state_sizes = state_sizes
         self.agent_o_size = agent_o_size
         self.n_agents = n_agents
-
+        self.env_name = env_name
         # All gets saved in the environment configuration 
         self.config_dict = recursive_dict_update(self.config_dict, self.alg_config)
         self.config_dict = recursive_dict_update(self.config_dict, self.scheme)
@@ -57,8 +57,12 @@ class GeneralController:
 
         self.simple_config = SN(**self.config_dict)
         self.agent = agent_REGISTRY["rnn"](self.input_shape, self.simple_config)
+        if "Foraging" in self.env_name:
+            env_folder = "foraging" 
+        if "Cooperative" in self.env_name:
+            env_folder = "cooperative" 
 
-        path = os.path.join("results", "models", agent_type, seed)
+        path = os.path.join("results", "models", env_folder, agent_type, seed)
         self.agent.load_state_dict(th.load("{}/agent.th".format(path), map_location=lambda storage, loc: storage))
 
     def act(self, obs, verbose=True):

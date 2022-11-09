@@ -32,4 +32,4 @@ critic_type: "cv_critic"
 
 name: "maa2c"
 
-t_max: 20050000
+# t_max: 20050000

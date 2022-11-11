@@ -221,10 +221,25 @@ def run_sequential(args, logger):
             or model_save_time == 0
         ):
             model_save_time = runner.t_env
-            save_path = os.path.join(
-                args.local_results_path, "models", args.unique_token, str(runner.t_env)
-            )
+            # save_path = os.path.join(
+            #     args.local_results_path, "models", args.unique_token, str(runner.t_env)
+            # )
             # "results/models/{}".format(unique_token)
+
+            if "CooperativeReaching" in args.env_args["key"]:
+                env_name = "cooperative"
+            elif "lbforaging" in args.env_args["key"]:
+                env_name = "lbforaging"
+            elif "gym_cooking" in args.env_args["key"]:
+                env_name = "gym_cooking"
+            else:
+                print("environment not configured")
+                exit()
+
+            seed = str(args.seed) + str(args.descriptor)
+            algo_name = str(args.name)
+            save_path = os.path.join(args.local_results_path, "models", env_name, algo_name , seed,  str(runner.t_env)) 
+
             os.makedirs(save_path, exist_ok=True)
             logger.console_logger.info("Saving models to {}".format(save_path))
 

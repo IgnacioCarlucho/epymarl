@@ -470,16 +470,16 @@ class CookingEnvironment(Env):
             tomato_color = "magenta" if tomato.chop_state == ChopFoodStates.CHOPPED else "red"
             tomato_string = colorize("●", tomato_color)
             grid[x, y] = grid[x, y].replace(" ", tomato_string)
-        for lettuce in self.world.world_objects["Lettuce"]:
-            x, y = lettuce.location
-            lettuce_color = "blue" if lettuce.chop_state == ChopFoodStates.CHOPPED else "green"
+        for carrot in self.world.world_objects["Carrot"]:
+            x, y = carrot.location
+            carrot_color = "blue" if carrot.blend_state == BlenderFoodStates.MASHED else "green"
             # cover the case where there's already a tomato there (i.e. chopped lettuce + tomato)
             # won't do anything if there isn't already a chopped tomato there
             lettuce_tomato_string = colorize("●", "yellow")
             grid[x, y] = grid[x, y].replace("●", lettuce_tomato_string)
             # add the lettuce in the case that it's an empty space
-            lettuce_string = colorize("●", lettuce_color)
-            grid[x, y] = grid[x, y].replace(" ", lettuce_string)
+            carrot_string = colorize("●", carrot_color)
+            grid[x, y] = grid[x, y].replace(" ", carrot_string)
         # then spawn plates, which take on the color of any lettuce/tomato on them
         for plate in self.world.world_objects["Plate"]:
             x, y = plate.location
@@ -492,7 +492,7 @@ class CookingEnvironment(Env):
                 symbols = "▲▼▶◀"
                 symbol = symbols[agent.orientation-1]
                 grid[x, y] = grid[x, y].replace(" ", symbol)
-            elif isinstance(agent.holding, Tomato):
+            elif isinstance(agent.holding, (Tomato, Carrot)):
                 tomato = agent.holding
                 symbols = "▲▼▶◀"
                 symbol = symbols[agent.orientation-1]

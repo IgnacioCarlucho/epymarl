@@ -11,16 +11,16 @@ import gym_cooking
 
 
 # Parameters 
-VERBOSE = False
-SEED = 25551
+VERBOSE =  False
+SEED = 2555
 n_episode = 10
-render_env = False
+render_env =  False
 
 # Config environment 
-env_name = "Foraging-6x6-2p-4f-v2"
-# env_name = "Foraging-6x6-2p-3f-v2"
+# env_name = "Foraging-6x6-2p-4f-v2"
+env_name = "Foraging-6x6-2p-3f-v2"
 #env_name = "MARL-CooperativeReaching-5-40-v0"
-#env_name = "cookingZooEnv-tiny-250-v0"
+# env_name = "cookingZooEnv-tiny-250-v0"
 
 env = gym.make(env_name)
 env.seed(SEED)
@@ -41,16 +41,18 @@ if VERBOSE:
 
 ################## Important bit ########################
 # Define agent. As of now you have 6 to choose from, with 3 seeds each 
-agent = GeneralController("qmix", "seed_3", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
+# agent = GeneralController("qmix", "seed_2", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
 # agent = GeneralController("iql", "seed_2", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
 # agent = GeneralController("ippo", "seed_3", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
-# agent = GeneralController("mappo", "seed_1", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
+# agent = GeneralController("mappo", "seed_3", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
 # agent = GeneralController("maddpg", "seed_3", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
-# agent = GeneralController("maa2c", "seed_3", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
+# gent = GeneralController("maa2c", "seed_3", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
+agent = GeneralController("ia2c", "seed_1", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
+# agent = GeneralController("vdn", "seed_1", act_sizes, state_sizes, agent_o_size, n_agents, env_name)
 
 
 
-
+total_rew = []
 # Run for number of episodes 
 for i in range(n_episode):
     obs = env.reset()
@@ -64,11 +66,17 @@ for i in range(n_episode):
         # Take action 
         n_obs, rews, dones, infos = env.step(actions)
 
-        # Not important
+        # Just for rendering
         if render_env:
-            env.render()
+            if "cooking" in env_name:
+                img = env.render("ansi")
+                print(img)
+            else: 
+                env.render()
         avgs.append(rews[0])
         obs = n_obs
-        # input()
     print("rewards", np.sum(avgs), "in " +  str(len(avgs)) + " steps" )
-
+    total_rew.append(np.sum(avgs))
+print("----------------------------------------------------------------------")
+print("Total rewards", np.sum(total_rew), "in " +  str(n_episode) + " epochs" )
+print("----------------------------------------------------------------------")

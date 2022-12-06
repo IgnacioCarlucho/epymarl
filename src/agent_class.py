@@ -8,7 +8,7 @@ from modules.agents import REGISTRY as agent_REGISTRY
 from types import SimpleNamespace as SN
 from torch.autograd import Variable
 import torch.nn.functional as F
-
+import torch.distributions as dist
 
 
 class GeneralController:
@@ -56,25 +56,22 @@ class GeneralController:
         # get input confi
         self.input_shape = _get_input_shape(self.agent_o_size, self.n_agents, self.config_dict)
 
-        self.simple_config = SN(**self.config_dict)
-        
+
         if "Foraging" in self.env_name:
             env_folder = "foraging" 
-            if self.env_name=="Foraging-6x6-2p-3f-v2":
-                print("**************")
-                print("**************")
-                print("env was trained with 4 fruits, but running with 3 fruits")
-                print("should add [-1 -1 0] to obs so that net can run")
-                self.flag_4f_3f = True
-                # self.input_shape += 3
-                exit()
-                print("**************")
-                print("**************")
+            if self.env_name=="Foraging-6x6-2p-4f-v2":
+                env_folder = "lbf_environment_with_f4"
+            print(self.config_dict["hidden_dim"])
+            # self.config_dict["hidden_dim"]= 64
+            print(self.config_dict["hidden_dim"])
         if "Cooperative" in self.env_name:
             env_folder = "cooperative" 
+            # self.config_dict["hidden_dim"]= 64
         if "cooking" in self.env_name:
             env_folder = "cooking" 
 
+        self.simple_config = SN(**self.config_dict)
+        print(self.simple_config)
         self.agent = agent_REGISTRY["rnn"](self.input_shape, self.simple_config)
 
         path = os.path.join("results", "models", env_folder, agent_type, seed)
@@ -106,12 +103,14 @@ class GeneralController:
 
         # some methods have logits as outputs
         if self.config_dict["agent_output_type"] == "pi_logits":
+            # print("pi", self.config_dict["mask_before_softmax"])
             # if self.config_dict["mask_before_softmax"]:
             # DO I NEED TO DO THIS? 
             # Make the logits for unavailable actions very negative to minimise their affect on the softmax
-            # reshaped_avail_actions = avail_actions.reshape(ep_batch.batch_size * self.n_agents, -1)
-            # agent_outs[reshaped_avail_actions == 0] = -1e10
-            vals = th.nn.functional.softmax(vals, dim=-1).detach()
+            #reshaped_avail_actions = avail_actions.reshape(ep_batch.batch_size * self.n_agents, -1)
+            #agent_outs[reshaped_avail_actions == 0] = -1e10
+            vals2 = th.nn.functional.softmax(vals, dim=-1).detach()
+            pass
         else: 
             if verbose:
                 print("No pi_logits")
@@ -120,8 +119,14 @@ class GeneralController:
         actions = th.argmax(vals,axis=-1).numpy()
         if verbose:
             print("actions", actions)
+        # print("actions", actions)
+        particle_dist = dist.OneHotCategorical(logits=vals)
+        sampled_actions1 = particle_dist.sample()
+        sampled_actions = sampled_actions1.argmax(dim=-1).numpy()
 
-        return actions
+
+
+        return sampled_actions
 
     def maddpg_action_selection(self, vals, verbose):
         if verbose:

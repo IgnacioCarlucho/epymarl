@@ -66,7 +66,7 @@ class GeneralController:
             print(self.config_dict["hidden_dim"])
         if "Cooperative" in self.env_name:
             env_folder = "cooperative" 
-            # self.config_dict["hidden_dim"]= 64
+            
         if "cooking" in self.env_name:
             env_folder = "cooking" 
 
@@ -75,7 +75,14 @@ class GeneralController:
         self.agent = agent_REGISTRY["rnn"](self.input_shape, self.simple_config)
 
         path = os.path.join("results", "models", env_folder, agent_type, seed)
-        self.agent.load_state_dict(th.load("{}/agent.th".format(path), map_location=lambda storage, loc: storage))
+        try: 
+            self.agent.load_state_dict(th.load("{}/agent.th".format(path), map_location=lambda storage, loc: storage))
+        except RuntimeError:
+            # some models have 64 hidden dimensions 
+            self.config_dict["hidden_dim"] = 64
+            self.simple_config = SN(**self.config_dict)
+            self.agent = agent_REGISTRY["rnn"](self.input_shape, self.simple_config)
+            self.agent.load_state_dict(th.load("{}/agent.th".format(path), map_location=lambda storage, loc: storage))
 
     def act(self, obs, verbose=True):
         

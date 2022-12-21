@@ -7,6 +7,34 @@ EPyMARL is  an extension of [PyMARL](https://github.com/oxwhirl/pymarl), and inc
 - Flexibility with extra implementation details (e.g. hard/soft updates, reward standarization, and more)
 - Consistency of implementations between different algorithms (fair comparisons)
 
+# Modifications: 
+
+In this repo I include the pre trained models for LBF and overcooked. 
+And example of how to run can be seen in the file: https://github.com/IgnacioCarlucho/epymarl/blob/main/src/run_class.py
+
+
+## LBF: 
+
+Includes the following algorithms and seeds 
+
+- IPPO: 3 seeds
+- IA2C: 3 seeds
+- MAA2C: 3 seeds
+- MAPPO: 3 seeds
+- QMIX: 3 seeds
+
+
+## Overcooked
+
+The following algorithms and seeds are available: 
+
+- IPPO: 4 seeds
+- IA2C: 3 seeds
+- MAA2C: 4 seeds
+
+
+
+
 # Table of Contents
 - [Extended Python MARL framework - EPyMARL](#extended-python-marl-framework---epymarl)
 - [Table of Contents](#table-of-contents)

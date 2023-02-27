@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: grid-generalization
+Version: 0.0.1
+Summary: Multi-agent environment for reinforcement learning
+Home-page: https://github.com/trevormcinroe/grid_generalization
+Author: Trevor McInroe
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3.7
+Description-Content-Type: text/markdown
+Provides-Extra: test

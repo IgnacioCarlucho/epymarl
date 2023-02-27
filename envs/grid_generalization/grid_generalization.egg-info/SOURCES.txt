@@ -1,0 +1,13 @@
+README.md
+setup.py
+grid_generalization/__init__.py
+grid_generalization.egg-info/PKG-INFO
+grid_generalization.egg-info/SOURCES.txt
+grid_generalization.egg-info/dependency_links.txt
+grid_generalization.egg-info/requires.txt
+grid_generalization.egg-info/top_level.txt
+grid_generalization/gridgen/__init__.py
+grid_generalization/gridgen/environment.py
+grid_generalization/gridgen/rendering.py
+grid_generalization/gridgen/static_layouts/__init__.py
+grid_generalization/gridgen/static_layouts/walls_2p_4w.py

@@ -199,10 +199,14 @@ class GridGeneralization(gym.Env):
         self.current_step += 1
 
         # Term conditions: (1) both agents on goal or time-limit reached
-        if self.current_step == self.time_limit:
+        if team_reward == 0 or self.current_step == self.time_limit:
             done = [True for _ in range(len(self.agents))]
         else:
             done = [False for _ in range(len(self.agents))]
+
+        # Some reward shaping. If both agents are on the goal, give a large, positive bonus
+        if team_reward == 0:
+            team_reward = 10
 
         return self._make_obs(), [team_reward]*2, done, {}
 

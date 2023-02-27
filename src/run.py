@@ -37,7 +37,7 @@ def run(_run, _config, _log):
     try:
         map_name = _config["env_args"]["map_name"]
     except:
-        map_name = _config["env_args"]["key"]   
+        map_name = _config["env_args"]["key"]
     unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now()}"
 
     args.unique_token = unique_token
@@ -232,13 +232,16 @@ def run_sequential(args, logger):
                 env_name = "lbforaging"
             elif "gym_cooking" in args.env_args["key"]:
                 env_name = "gym_cooking"
+            elif "grid" in args.env_args["key"]:
+                env_name = "grid_gen"
             else:
-                print("environment not configured")
+                print("environment not configured for saving")
+                print("check run.py file")
                 exit()
 
             seed = str(args.seed) + str(args.descriptor)
             algo_name = str(args.name)
-            save_path = os.path.join(args.local_results_path, "models", env_name, algo_name , seed,  str(runner.t_env)) 
+            save_path = os.path.join(args.local_results_path, "models", env_name, algo_name , seed,  str(runner.t_env))
 
             os.makedirs(save_path, exist_ok=True)
             logger.console_logger.info("Saving models to {}".format(save_path))

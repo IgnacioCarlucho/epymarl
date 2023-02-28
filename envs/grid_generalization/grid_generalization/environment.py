@@ -193,9 +193,10 @@ class GridGeneralization(gym.Env):
 
             # Adding a row-based penalty
             # individual_reward += (self.agents[i].y - self.agents[i].goal_y) ** 2
-
+            # print("individual_reward", individual_reward)
             team_reward -= individual_reward
-
+        
+        
         self.current_step += 1
 
         # Term conditions: (1) both agents on goal or time-limit reached
@@ -206,7 +207,10 @@ class GridGeneralization(gym.Env):
 
         # Some reward shaping. If both agents are on the goal, give a large, positive bonus
         if team_reward == 0:
-            team_reward = 10
+            team_reward = 10.
+        else:
+            team_reward=-1.
+        # print("team_reward", team_reward)
 
         return self._make_obs(), [team_reward]*2, done, {}
 

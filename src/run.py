@@ -237,7 +237,7 @@ def run_sequential(args, logger):
             else:
                 print("environment not configured for saving")
                 print("check run.py file")
-                exit()
+                env_name = "general"
 
             seed = str(args.seed) + str(args.descriptor)
             algo_name = str(args.name)

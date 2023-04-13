@@ -178,7 +178,7 @@ def run_sequential(args, logger):
     last_time = start_time
 
     logger.console_logger.info("Beginning training for {} timesteps".format(args.t_max))
-
+    checkpoint = 0
     while runner.t_env <= args.t_max:
 
         # Run for a whole episode at a time
@@ -215,12 +215,13 @@ def run_sequential(args, logger):
             last_test_T = runner.t_env
             for _ in range(n_test_runs):
                 runner.run(test_mode=True)
-
+        # print(args.learner_log_interval)
         if args.save_model and (
             runner.t_env - model_save_time >= args.save_model_interval
-            or model_save_time == 0
+            or checkpoint == 0
         ):
             model_save_time = runner.t_env
+
             # save_path = os.path.join(
             #     args.local_results_path, "models", args.unique_token, str(runner.t_env)
             # )
@@ -234,6 +235,8 @@ def run_sequential(args, logger):
                 env_name = "gym_cooking"
             elif "grid" in args.env_args["key"]:
                 env_name = "grid_gen"
+            elif "wolf" in args.env_args["key"]:
+                env_name = "wolf"
             else:
                 print("environment not configured for saving")
                 print("check run.py file")
@@ -241,8 +244,10 @@ def run_sequential(args, logger):
 
             seed = str(args.seed) + str(args.descriptor)
             algo_name = str(args.name)
-            save_path = os.path.join(args.local_results_path, "models", env_name, algo_name , seed,  str(runner.t_env))
-
+            # save_path = os.path.join(args.local_results_path, "models", env_name, algo_name , seed,  str(runner.t_env))
+            save_path = os.path.join(args.local_results_path, "models", env_name, algo_name , seed,  str(checkpoint))
+            print(checkpoint, runner.t_env)
+            checkpoint += 1
             os.makedirs(save_path, exist_ok=True)
             logger.console_logger.info("Saving models to {}".format(save_path))
 
